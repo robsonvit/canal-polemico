@@ -142,13 +142,28 @@ def main():
 
     if not os.environ.get("YOUTUBE_REFRESH_TOKEN"):
         print("⚠️  YOUTUBE_REFRESH_TOKEN não configurado.")
-        print(f"   Configure os secrets no GitHub para ativar o upload.")
+        print("   Configure os secrets no GitHub para ativar o upload.")
         print(f"\n   ✅ Short salvo localmente em: {video_final}")
     else:
-        from scripts.upload_youtube import upload_youtube
-        video_id = upload_youtube(video_final, dados)
-        print(f"\n🎉 SHORT PUBLICADO!")
-        print(f"   📱 https://www.youtube.com/shorts/{video_id}")
+        try:
+            from scripts.upload_youtube import upload_youtube
+            video_id = upload_youtube(video_final, dados)
+            print(f"\n🎉 SHORT PUBLICADO!")
+            print(f"   📱 https://www.youtube.com/shorts/{video_id}")
+        except Exception as e:
+            erro_str = str(e)
+            print(f"\n⚠️  Upload para o YouTube falhou: {erro_str[:200]}")
+            if "invalid_client" in erro_str or "OAuth" in erro_str:
+                print("")
+                print("   📋 SOLUÇÃO: As credenciais OAuth precisam ser do canal @futzona2026.")
+                print("   1. Acesse Google Cloud Console → Credentials")
+                print("   2. Crie um OAuth 2.0 Client ID para o canal @futzona2026")
+                print("   3. Execute: python scripts/obter_token.py")
+                print("   4. Atualize os secrets YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET")
+                print("      e YOUTUBE_REFRESH_TOKEN no GitHub Actions")
+            print(f"\n   ✅ Short gerado com sucesso! Salvo no artefato do workflow.")
+            print(f"   📁 {video_final}")
+            # NÃO levanta exceção — o vídeo foi gerado, só o upload falhou
 
     # ── Resumo final ──────────────────────────────────────────────────────────
     print("\n" + "═"*65)

@@ -5,6 +5,11 @@ __pycache__/
 *.pyo
 .env
 
+# Secrets OAuth locais (NUNCA commitar!)
+client_secret*.json
+refresh_token*.json
+*.token.json
+
 # Cache do icrawler
 /tmp/icrawler_*/
 
