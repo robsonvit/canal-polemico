@@ -109,8 +109,6 @@ def _criar_frame_base(
     )
     # "F" de FUT ZONA no avatar
     font_avatar = _carregar_fonte(52, negrito=True)
-    _texto_centralizado(draw, "F", avatar_cy - 30, font_avatar,
-                        (10, 10, 10), largura=W)
     # Ajusta posição manualmente pois _texto_centralizado centraliza em W
     bbox_f = draw.textbbox((0, 0), "F", font=font_avatar)
     fw = bbox_f[2] - bbox_f[0]
