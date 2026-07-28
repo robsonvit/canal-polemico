@@ -54,9 +54,12 @@ def upload_youtube(video_path: str, dados: dict) -> str:
 
     # ── Metadados ─────────────────────────────────────────────────────────────
     titulo = dados.get("titulo_youtube", dados.get("titulo", "Polêmica do Futebol! 🔥 #Shorts"))
+    # A API do YouTube (XML) não permite os caracteres < e > no título e descrição
+    titulo = titulo.replace("<", "").replace(">", "").strip()
     titulo = titulo[:100]
 
     descricao = dados.get("descricao_yt", "")[:450]
+    descricao = descricao.replace("<", "").replace(">", "")
     descricao += (
         f"\n\n#FutZona #Futebol #Polemica #Shorts #futzona2026"
         f"\n\nCanal: @futzona2026"
