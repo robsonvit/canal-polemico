@@ -39,7 +39,7 @@ def _buscar_duckduckgo(termo: str, destino: str, prefixo: str) -> str | None:
                 parsed = urllib.parse.urlparse(thumb_url)
                 qs = urllib.parse.parse_qs(parsed.query)
                 if 'id' in qs:
-                    url = f"https://ts1.mm.bing.net/th?id={qs['id'][0]}&w=800&h=800"
+                    url = f"https://ts1.mm.bing.net/th?id={qs['id'][0]}&w=800"
             
             # Se não conseguiu extrair do bing, tenta usar a original
             if not url:
