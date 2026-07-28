@@ -6,10 +6,15 @@ que é mais imune a bloqueios de bots do que o YouTube. Fallback para arquivo di
 """
 
 import os
+import sys
 import subprocess
 import tempfile
 import random
 import requests
+
+# Força UTF-8 no stdout
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 DURACAO_VIDEO = 10  # segundos
 
@@ -37,6 +42,40 @@ def baixar_musica(output_dir: str = "output") -> str:
     if os.path.exists(destino_final) and os.path.getsize(destino_final) > 10000:
         print(f"🎵 Música já disponível: {destino_final}")
         return destino_final
+
+    # ── Preferência: Usar trechos de música locais (assets/audios/musicas) ──
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    local_dir = os.path.join(root_dir, "assets", "audios", "musicas")
+    
+    if os.path.isdir(local_dir):
+        arquivos = [os.path.join(local_dir, f) for f in os.listdir(local_dir) if f.lower().endswith(".mp3")]
+        if arquivos:
+            musica_escolhida = random.choice(arquivos)
+            print(f"🎵 Usando trecho de música local: {os.path.basename(musica_escolhida)}")
+            
+            # Copia ou processa com ffmpeg para garantir a duração exata de 10s
+            if _tem_ffmpeg():
+                cmd_ffmpeg = [
+                    "ffmpeg", "-y",
+                    "-i", musica_escolhida,
+                    "-t", str(DURACAO_VIDEO),
+                    "-af", f"afade=t=in:st=0:d=0.5,afade=t=out:st={DURACAO_VIDEO-0.5}:d=0.5",
+                    "-ar", "44100",
+                    "-ac", "2",
+                    "-b:a", "192k",
+                    destino_final,
+                ]
+                try:
+                    subprocess.run(cmd_ffmpeg, capture_output=True, check=True)
+                    print(f"   ✅ Áudio local recortado e processado: {destino_final}")
+                    return destino_final
+                except Exception as e:
+                    print(f"   ⚠️  Erro ffmpeg no áudio local: {e}. Copiando direto...")
+            
+            import shutil
+            shutil.copy(musica_escolhida, destino_final)
+            print(f"   ✅ Áudio local copiado: {destino_final}")
+            return destino_final
 
     print(f"🎵 Buscando música viral no SoundCloud usando yt-dlp...")
     termo = random.choice(TERMOS_BUSCA)
