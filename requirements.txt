@@ -25,4 +25,4 @@ python-dotenv>=1.0.0
 yt-dlp
 
 ddgs
-duckduckgo-search
+ddgs
