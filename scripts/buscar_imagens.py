@@ -3,26 +3,16 @@ buscar_imagens.py
 ─────────────────
 Busca 2 imagens para os lados A e B da polêmica.
 
-Estratégia em cascata:
-  1. icrawler (GoogleImageCrawler) — tenta primeiro, sem chave de API
-  2. Bing Image Search API (gratuita, 1000 req/mês) — fallback com BING_API_KEY
-  3. Imagem placeholder colorida — último recurso (nunca falha)
-
-As imagens são redimensionadas para 520×580px cada e salvas em output/.
+Estratégia:
+  1. DuckDuckGo Search (via ddgs) - muito confiável e não requer chave de API.
+  2. Placeholder colorido - último recurso (nunca falha).
 """
 
 import os
 import time
-import shutil
 import requests
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Configurações
-# ─────────────────────────────────────────────────────────────────────────────
-BING_API_KEY = os.environ.get("BING_API_KEY", "")
-BING_ENDPOINT = "https://api.bing.microsoft.com/v7.0/images/search"
 
 IMG_WIDTH  = 520
 IMG_HEIGHT = 580
@@ -35,100 +25,48 @@ HEADERS_BROWSER = {
     )
 }
 
-
 # ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 1: icrawler (Google Images)
+# Estratégia 1: DuckDuckGo Search
 # ─────────────────────────────────────────────────────────────────────────────
-def _buscar_icrawler(termo: str, destino: str, prefixo: str) -> str | None:
-    """Tenta baixar imagem via icrawler. Retorna caminho ou None."""
+def _buscar_ddg(termo: str, destino: str, prefixo: str) -> str | None:
+    """Busca imagem usando DuckDuckGo Search (ddgs)."""
     try:
-        from icrawler.builtin import GoogleImageCrawler
-
-        tmp_dir = f"/tmp/icrawler_{prefixo}_{int(time.time())}"
-        os.makedirs(tmp_dir, exist_ok=True)
-
-        crawler = GoogleImageCrawler(
-            storage={"root_dir": tmp_dir},
-            downloader_threads=2,
-        )
-        crawler.crawl(
-            keyword=termo,
-            max_num=3,
-            file_idx_offset=0,
-            filters={"type": "photo", "size": "large"},
-        )
-
-        # Pega o primeiro arquivo encontrado
-        arquivos = sorted(Path(tmp_dir).glob("*.*"))
-        if arquivos:
-            destino_final = os.path.join(destino, f"{prefixo}_icrawler.jpg")
-            shutil.copy(str(arquivos[0]), destino_final)
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-            print(f"   ✅ icrawler OK para '{termo}'")
-            return destino_final
-
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-        print(f"   ⚠️  icrawler: nenhuma imagem encontrada para '{termo}'")
-        return None
-
-    except Exception as e:
-        print(f"   ⚠️  icrawler falhou: {e}")
-        return None
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 2: Bing Image Search API
-# ─────────────────────────────────────────────────────────────────────────────
-def _buscar_bing(termo: str, destino: str, prefixo: str) -> str | None:
-    """Busca imagem via Bing Image Search API. Retorna caminho ou None."""
-    if not BING_API_KEY:
-        print(f"   ⚠️  BING_API_KEY não configurada, pulando Bing")
-        return None
-
-    try:
-        params = {
-            "q":          termo,
-            "count":      5,
-            "imageType":  "Photo",
-            "size":       "Large",
-            "safeSearch": "Moderate",
-        }
-        headers = {"Ocp-Apim-Subscription-Key": BING_API_KEY}
-
-        resp = requests.get(BING_ENDPOINT, headers=headers, params=params, timeout=15)
-        resp.raise_for_status()
-        resultados = resp.json().get("value", [])
-
-        for item in resultados:
-            url_img = item.get("contentUrl", "")
+        from duckduckgo_search import DDGS
+        print(f"   🔎 Pesquisando no DuckDuckGo: '{termo}'")
+        
+        # Pega as top 3 para ter margem caso algum link falhe
+        results = DDGS().images(termo, max_results=3)
+        
+        for item in results:
+            url_img = item.get("image", "")
             if not url_img:
                 continue
             try:
-                r = requests.get(url_img, headers=HEADERS_BROWSER, timeout=20, stream=True)
+                r = requests.get(url_img, headers=HEADERS_BROWSER, timeout=15, stream=True)
                 r.raise_for_status()
-                destino_final = os.path.join(destino, f"{prefixo}_bing.jpg")
+                destino_final = os.path.join(destino, f"{prefixo}_ddg.jpg")
                 with open(destino_final, "wb") as f:
                     for chunk in r.iter_content(8192):
                         f.write(chunk)
                 # Valida que é uma imagem real
                 Image.open(destino_final).verify()
-                print(f"   ✅ Bing OK para '{termo}'")
+                print(f"   ✅ DuckDuckGo OK para '{termo}'")
                 return destino_final
             except Exception:
                 if os.path.exists(destino_final):
                     os.remove(destino_final)
                 continue
 
-        print(f"   ⚠️  Bing: nenhuma imagem válida para '{termo}'")
+        print(f"   ⚠️  DuckDuckGo: nenhuma imagem baixada com sucesso para '{termo}'")
         return None
 
     except Exception as e:
-        print(f"   ⚠️  Bing falhou: {e}")
+        print(f"   ⚠️  DuckDuckGo falhou: {e}")
         return None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 3: Placeholder colorido (nunca falha)
+# Estratégia 2: Placeholder colorido (nunca falha)
 # ─────────────────────────────────────────────────────────────────────────────
 def _criar_placeholder(nome: str, destino: str, prefixo: str, cor: tuple) -> str:
     """Cria uma imagem placeholder com o nome do personagem. Nunca falha."""
@@ -156,7 +94,7 @@ def _criar_placeholder(nome: str, destino: str, prefixo: str, cor: tuple) -> str
         draw.text((x + 2, y + 2), linha, fill=(0, 0, 0, 100), font=font)  # sombra
         draw.text((x, y), linha, fill=(255, 255, 255), font=font)
 
-    # Ícone de bola de futebol (texto emoji simulado)
+    # Ícone
     draw.ellipse(
         [IMG_WIDTH//2 - 40, 30, IMG_WIDTH//2 + 40, 110],
         fill=(255, 255, 255, 200),
@@ -207,9 +145,6 @@ def buscar_imagens(
 ) -> tuple[Image.Image, Image.Image]:
     """
     Busca e processa as imagens dos dois lados da polêmica.
-
-    Retorna uma tupla (img_a, img_b) como objetos PIL.Image prontos
-    para compor o layout 9:16.
     """
     os.makedirs(output_dir, exist_ok=True)
 
@@ -225,31 +160,17 @@ def buscar_imagens(
     ]:
         print(f"\n🔍 Buscando imagem para [{nome}]: '{termo}'")
 
-        # Cascata: icrawler → Bing → placeholder
+        # DDGS -> placeholder
         caminho = (
-            _buscar_icrawler(termo, output_dir, f"img_{lado}")
-            or _buscar_bing(termo, output_dir, f"img_{lado}")
+            _buscar_ddg(termo, output_dir, f"img_{lado}")
             or _criar_placeholder(nome, output_dir, f"img_{lado}", CORES[cor_key])
         )
 
         caminhos[lado] = caminho
-        time.sleep(1)  # Pequena pausa entre requisições
+        time.sleep(1)  # Pequena pausa
 
     img_a = _processar_imagem(caminhos["a"])
     img_b = _processar_imagem(caminhos["b"])
 
     print(f"\n✅ Imagens processadas: {IMG_WIDTH}x{IMG_HEIGHT}px cada")
     return img_a, img_b
-
-
-if __name__ == "__main__":
-    img_a, img_b = buscar_imagens(
-        termo_a="Messi Barcelona camisa 10",
-        nome_a="Messi",
-        termo_b="Neymar Bola de Ouro 2015",
-        nome_b="Neymar",
-        output_dir="output",
-    )
-    img_a.save("output/teste_img_a.jpg")
-    img_b.save("output/teste_img_b.jpg")
-    print("Teste OK!")
