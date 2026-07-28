@@ -25,6 +25,7 @@ import math
 import textwrap
 import subprocess
 import tempfile
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -290,7 +291,6 @@ def montar_video(
                         os.path.join(frames_dir, f"frame_{i:04d}.jpg"))
 
         # Monta vídeo final
-        import shutil
         output_path = os.path.join(output_dir, "video_final.mp4")
         _frames_para_video(frames_dir, musica_path, output_path)
 
