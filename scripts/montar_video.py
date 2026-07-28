@@ -97,23 +97,56 @@ def _criar_frame_base(
     draw = ImageDraw.Draw(canvas)
 
     # ── Header (Apenas o Avatar e os Textos, sem faixa preta) ────────────────
-    # Círculo do avatar (simulado com gradiente dourado)
     avatar_r = 60
     avatar_cx, avatar_cy = 90, 110  # Movido mais para baixo
-    draw.ellipse(
-        [avatar_cx - avatar_r, avatar_cy - avatar_r,
-         avatar_cx + avatar_r, avatar_cy + avatar_r],
-        fill=(255, 200, 0),
-        outline=(255, 220, 50),
-        width=4,
-    )
-    # "F" de FUT ZONA no avatar
-    font_avatar = _carregar_fonte(52, negrito=True)
-    # Ajusta posição manualmente pois _texto_centralizado centraliza em W
-    bbox_f = draw.textbbox((0, 0), "F", font=font_avatar)
-    fw = bbox_f[2] - bbox_f[0]
-    draw.text((avatar_cx - fw // 2, avatar_cy - 26), "F",
-              fill=(10, 10, 10), font=font_avatar)
+
+    # Tenta carregar a imagem do avatar
+    avatar_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "avatar.jpg")
+    usou_imagem = False
+    
+    if os.path.exists(avatar_path):
+        try:
+            img_avatar = Image.open(avatar_path).convert("RGBA")
+            # Corta quadrado perfeito no centro antes de redimensionar
+            min_side = min(img_avatar.width, img_avatar.height)
+            left = (img_avatar.width - min_side) // 2
+            top = (img_avatar.height - min_side) // 2
+            img_avatar = img_avatar.crop((left, top, left + min_side, top + min_side))
+            img_avatar = img_avatar.resize((avatar_r * 2, avatar_r * 2), Image.LANCZOS)
+            
+            mask = Image.new("L", (avatar_r * 2, avatar_r * 2), 0)
+            draw_mask = ImageDraw.Draw(mask)
+            draw_mask.ellipse((0, 0, avatar_r * 2, avatar_r * 2), fill=255)
+            
+            canvas.paste(img_avatar, (avatar_cx - avatar_r, avatar_cy - avatar_r), mask)
+            
+            # Opcional: Borda dourada ao redor do avatar
+            draw.ellipse(
+                [avatar_cx - avatar_r, avatar_cy - avatar_r,
+                 avatar_cx + avatar_r, avatar_cy + avatar_r],
+                outline=(255, 200, 0),
+                width=3,
+            )
+            usou_imagem = True
+        except Exception as e:
+            print(f"⚠️  Erro ao carregar avatar.jpg: {e}")
+
+    if not usou_imagem:
+        # Círculo do avatar (simulado com gradiente dourado) fallback
+        draw.ellipse(
+            [avatar_cx - avatar_r, avatar_cy - avatar_r,
+             avatar_cx + avatar_r, avatar_cy + avatar_r],
+            fill=(255, 200, 0),
+            outline=(255, 220, 50),
+            width=4,
+        )
+        # "F" de FUT ZONA no avatar
+        font_avatar = _carregar_fonte(52, negrito=True)
+        # Ajusta posição manualmente pois _texto_centralizado centraliza em W
+        bbox_f = draw.textbbox((0, 0), "F", font=font_avatar)
+        fw = bbox_f[2] - bbox_f[0]
+        draw.text((avatar_cx - fw // 2, avatar_cy - 26), "F",
+                  fill=(10, 10, 10), font=font_avatar)
 
     # Nome e @ do canal
     font_nome = _carregar_fonte(44, negrito=True)
