@@ -98,7 +98,7 @@ def _criar_frame_base(
 
     # ── Header (Apenas o Avatar e os Textos, sem faixa preta) ────────────────
     avatar_r = 60
-    avatar_cx, avatar_cy = 90, 110  # Movido mais para baixo
+    avatar_cx, avatar_cy = 90, 145  # Abaixado verticalmente (~30%)
 
     # Tenta carregar a imagem do avatar
     avatar_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "avatar.jpg")
@@ -151,8 +151,8 @@ def _criar_frame_base(
     # Nome e @ do canal
     font_nome = _carregar_fonte(44, negrito=True)
     font_arroba = _carregar_fonte(32, negrito=False)
-    draw.text((175, 65), "FUT ZONA", fill=COR_NOME_CANAL, font=font_nome)
-    draw.text((175, 120), "@futzona2026", fill=COR_ARROBA, font=font_arroba)
+    draw.text((175, 100), "FUT ZONA", fill=COR_NOME_CANAL, font=font_nome)
+    draw.text((175, 155), "@futzona2026", fill=COR_ARROBA, font=font_arroba)
 
     # ── Caixa do título (agora apenas texto limpo) ───────────────────────────
     margem_titulo = 40
@@ -170,8 +170,11 @@ def _criar_frame_base(
     else:
         font_t = font_titulo_p
 
-    max_chars = max(22, int((W - 2 * margem_titulo - 40) / (font_t.size * 0.55)))
-    linhas = textwrap.wrap(titulo_upper, width=max_chars)
+    # Regra: limite de no máximo 5 palavras por linha
+    palavras = titulo_upper.split()
+    linhas = []
+    for i in range(0, len(palavras), 5):
+        linhas.append(" ".join(palavras[i:i+5]))
 
     # Centraliza as linhas verticalmente na área do título
     line_h = font_t.size + 12
