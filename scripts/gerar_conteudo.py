@@ -26,16 +26,16 @@ from groq import Groq
 # Exemplos de polêmicas para guiar o modelo (few-shot)
 # ─────────────────────────────────────────────────────────────────────────────
 EXEMPLOS_POLEMICA = [
-    "Messi roubou a Bola de Ouro do Neymar em 2015?",
-    "Cristiano Ronaldo deveria estar no Hall da Fama do futebol?",
-    "Neymar foi expulso injustamente na Copa do Mundo 2018?",
-    "Mbappé traiu o PSG para ir ao Real Madrid?",
-    "Flamengo comprou árbitros na Copa do Brasil 2022?",
-    "Vini Jr sofre racismo ou provoca demais?",
-    "Ronaldo Fenômeno era melhor que Messi?",
-    "Corinthians foi rebaixado por culpa do técnico ou dos jogadores?",
-    "O VAR prejudicou o futebol brasileiro?",
-    "Pelé ou Messi: quem é o maior de todos os tempos?",
+    "A Bola de Ouro de 2015 foi roubada do Neymar pelo Messi.",
+    "O gol de mão do Maradona foi o maior assalto da história.",
+    "O Real Madrid de 2017 destruiria o Barcelona de 2011.",
+    "Ronaldo Fenômeno no auge foi melhor que o Pelé.",
+    "Zidane foi o melhor meia da história do futebol europeu.",
+    "O rebaixamento do Corinthians foi o maior vexame do futebol.",
+    "Vini Jr é muito maior e mais decisivo que o Neymar.",
+    "O Palmeiras de 1999 ganharia do Flamengo de 2019 com folga.",
+    "A Copa do Mundo de 2002 foi a mais fácil da história do Brasil.",
+    "Messi sem o Guardiola e o Xavi seria um jogador comum.",
 ]
 
 # Times e jogadores para variar as polêmicas
@@ -63,21 +63,23 @@ def gerar_conteudo() -> dict:
 Seu trabalho é criar UMA polêmica real e famosa do futebol que gere muita discussão, engajamento e comentários.
 
 INSTRUÇÕES:
-1. Escolha uma polêmica REAL e FAMOSA do futebol (pode ser sobre jogadores como: {', '.join(personagens_amostra)})
-2. O TÍTULO deve ser uma pergunta polêmica que faça as pessoas quererem comentar (ex: "MESSI ROUBOU A BOLA DE OURO DO NEYMAR?")
-3. Identifique os DOIS LADOS da polêmica (ex: Lado A = Messi, Lado B = Neymar)
-3. Identifique os DOIS LADOS da polêmica (ex: Lado A = Messi, Lado B = Neymar)
+1. Escolha uma polêmica REAL e FAMOSA do futebol mundial. Pode ser sobre jogadores, gols duvidosos, golaços inesquecíveis, jogos históricos marcantes, prêmios duvidosos (Bola de Ouro), ou melhores fases de times/jogadores. Seja criativo! (ex de personagens: {', '.join(personagens_amostra)})
+2. O TÍTULO deve ser uma AFIRMAÇÃO POLÊMICA (nunca uma pergunta) que gere revolta ou muito debate (ex: "ZIDANE FOI O MELHOR MEIA DE 2002", "O GOL DO MARADONA FOI O MAIOR ROUBO DA HISTÓRIA"). NÃO USE "?".
+3. Identifique os DOIS LADOS da polêmica para exibirmos as fotos (ex: Lado A = Zidane, Lado B = Ronaldo Fenômeno).
 
-Exemplos de polêmicas para inspirar (mas crie uma DIFERENTE):
-{exemplos_str}
+Exemplos de afirmações polêmicas para inspirar (crie uma DIFERENTE):
+- Zidane foi melhor que Ronaldinho no auge.
+- A Bola de Ouro de Messi em 2010 foi o maior roubo.
+- O Real Madrid de 2017 destruiria o Barcelona de 2011.
+- O gol de mão do Maradona foi o maior assalto da Copa.
 
 Responda APENAS com JSON válido no formato abaixo, sem markdown, sem texto antes ou depois:
 {{
-  "titulo": "TÍTULO POLÊMICO EM MAIÚSCULAS COM PONTO DE INTERROGAÇÃO?",
-  "lado_a_nome": "Nome do Personagem/Time A",
-  "lado_b_nome": "Nome do Personagem/Time B",
-  "termo_busca_a": "termo específico para buscar imagem no Google do lado A",
-  "termo_busca_b": "termo específico para buscar imagem no Google do lado B",
+  "titulo": "AFIRMAÇÃO POLÊMICA EM MAIÚSCULAS E SEM PONTO DE INTERROGAÇÃO",
+  "lado_a_nome": "Nome Curto do Lado A",
+  "lado_b_nome": "Nome Curto do Lado B",
+  "termo_busca_a": "Termo MUITO ESPECÍFICO para achar a foto EXATA no Bing Imagens (ex: 'Zinedine Zidane rosto HD' ou 'Taca Libertadores da America'). Não use termos genéricos.",
+  "termo_busca_b": "Termo MUITO ESPECÍFICO para achar a foto EXATA no Bing Imagens (ex: 'Ronaldo Fenomeno rosto HD' ou 'Lionel Messi segurando Bola de Ouro 2010'). Não use termos genéricos.",
   "titulo_youtube": "Título formatado para YouTube com emojis (máx 90 chars)",
   "descricao_yt": "Descrição curta do vídeo para YouTube com hashtags de futebol (máx 350 chars)",
   "tags": ["futebol", "polemica", "shorts", "futzona"]
