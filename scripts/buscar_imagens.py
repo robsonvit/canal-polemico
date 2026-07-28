@@ -4,26 +4,27 @@ buscar_imagens.py
 Busca 2 imagens para os lados A e B da polêmica.
 
 Estratégia:
-  1. DuckDuckGo Search (muito preciso, busca imagens exatas)
-  2. Wikipedia API Direta (sempre funciona e sem rate limit, ótimo fallback)
-  3. Placeholder colorido (último recurso)
+  1. DuckDuckGo Search (novo pacote 'ddgs' com bypass anti-bot)
+  2. Wikipedia API Direta (com encoding de URL e User-Agent, robusto)
+  3. Aborta o script caso não encontre (evita postar placeholders).
 """
 
 import os
 import time
 import requests
-from PIL import Image, ImageDraw, ImageFont
+import urllib.parse
+from PIL import Image
 
 IMG_WIDTH  = 520
 IMG_HEIGHT = 580
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 1: DuckDuckGo
+# Estratégia 1: DuckDuckGo (via pacote 'ddgs')
 # ─────────────────────────────────────────────────────────────────────────────
 def _buscar_duckduckgo(termo: str, destino: str, prefixo: str) -> str | None:
     try:
-        from duckduckgo_search import DDGS
-        print(f"   🔎 Pesquisando DDG: '{termo}'")
+        from ddgs import DDGS
+        print(f"   🔎 Pesquisando DuckDuckGo: '{termo}'")
         
         resultados = DDGS().images(termo, max_results=3)
         if not resultados:
@@ -57,15 +58,18 @@ def _buscar_duckduckgo(termo: str, destino: str, prefixo: str) -> str | None:
 def _buscar_wikipedia(termo: str, destino: str, prefixo: str) -> str | None:
     try:
         print(f"   🔎 Pesquisando na Wikipedia (fallback): '{termo}'")
-        search_url = f"https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch={termo}&utf8=&format=json"
-        r = requests.get(search_url, timeout=10)
+        search_url = f"https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch={urllib.parse.quote(termo)}&utf8=&format=json"
+        
+        headers = {"User-Agent": "BotCanalPolemico/1.0 (robsonvit@github.com)"}
+        r = requests.get(search_url, headers=headers, timeout=10)
         data = r.json()
         if not data.get("query", {}).get("search"):
             return None
             
         title = data["query"]["search"][0]["title"]
-        img_url = f"https://pt.wikipedia.org/w/api.php?action=query&titles={title}&prop=pageimages&format=json&pithumbsize=1000"
-        r2 = requests.get(img_url, timeout=10)
+        img_url = f"https://pt.wikipedia.org/w/api.php?action=query&titles={urllib.parse.quote(title)}&prop=pageimages&format=json&pithumbsize=1000"
+        
+        r2 = requests.get(img_url, headers=headers, timeout=10)
         pages = r2.json().get("query", {}).get("pages", {})
         
         for page_id, page_data in pages.items():
@@ -85,34 +89,6 @@ def _buscar_wikipedia(termo: str, destino: str, prefixo: str) -> str | None:
         print(f"   ⚠️  Wikipedia falhou: {e}")
         return None
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 3: Placeholder
-# ─────────────────────────────────────────────────────────────────────────────
-def _criar_placeholder(nome: str, destino: str, prefixo: str, cor: tuple) -> str:
-    img = Image.new("RGB", (IMG_WIDTH, IMG_HEIGHT), color=cor)
-    draw = ImageDraw.Draw(img)
-
-    font_size = 48
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", font_size)
-    except Exception:
-        font = ImageFont.load_default()
-
-    linhas = nome.upper().split()
-    y_start = IMG_HEIGHT // 2 - (len(linhas) * (font_size + 10)) // 2
-    for i, linha in enumerate(linhas):
-        bbox = draw.textbbox((0, 0), linha, font=font)
-        w = bbox[2] - bbox[0]
-        x = (IMG_WIDTH - w) // 2
-        y = y_start + i * (font_size + 10)
-        draw.text((x + 2, y + 2), linha, fill=(0, 0, 0, 100), font=font)
-        draw.text((x, y), linha, fill=(255, 255, 255), font=font)
-
-    draw.ellipse([IMG_WIDTH//2 - 40, 30, IMG_WIDTH//2 + 40, 110], fill=(255, 255, 255, 200), outline=(200, 200, 200), width=3)
-    caminho = os.path.join(destino, f"{prefixo}_placeholder.jpg")
-    img.save(caminho, "JPEG", quality=95)
-    print(f"   🎨 Placeholder criado para '{nome}'")
-    return caminho
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Processamento final
@@ -138,17 +114,18 @@ def _processar_imagem(caminho: str) -> Image.Image:
 # ─────────────────────────────────────────────────────────────────────────────
 def buscar_imagens(termo_a: str, nome_a: str, termo_b: str, nome_b: str, output_dir: str) -> tuple[Image.Image, Image.Image]:
     os.makedirs(output_dir, exist_ok=True)
-    CORES = {"a": (20, 40, 80), "b": (120, 20, 20)}
     caminhos = {}
     
-    for lado, termo, nome, cor_key in [("a", termo_a, nome_a, "a"), ("b", termo_b, nome_b, "b")]:
+    for lado, termo, nome in [("a", termo_a, nome_a), ("b", termo_b, nome_b)]:
         print(f"\n🔍 Buscando imagem para [{nome}]: '{termo}'")
         
         caminho = (
             _buscar_duckduckgo(termo, output_dir, f"img_{lado}")
             or _buscar_wikipedia(termo, output_dir, f"img_{lado}")
-            or _criar_placeholder(nome, output_dir, f"img_{lado}", CORES[cor_key])
         )
+        
+        if not caminho:
+            raise Exception(f"❌ ERRO CRÍTICO: Não foi possível encontrar a imagem para '{nome}'. O pipeline deve abortar para não gerar um vídeo vazio ou com placeholder falso.")
 
         caminhos[lado] = caminho
         time.sleep(1)
