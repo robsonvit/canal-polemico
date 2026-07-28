@@ -4,109 +4,65 @@ buscar_imagens.py
 Busca 2 imagens para os lados A e B da polêmica.
 
 Estratégia:
-  1. DuckDuckGo Search (via ddgs) - muito confiável e não requer chave de API.
-  2. Wikipedia API (pesquisa de páginas e imagens) - Excelente fallback, bloqueio raríssimo.
-  3. Placeholder colorido - último recurso (nunca falha).
+  1. Bing Image Downloader - extremamente robusto contra bloqueios.
+  2. Placeholder colorido - último recurso (nunca falha).
 """
 
 import os
 import time
-import requests
+import shutil
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 IMG_WIDTH  = 520
 IMG_HEIGHT = 580
 
-HEADERS_BROWSER = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
-    )
-}
-
 # ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 1: DuckDuckGo Search
+# Estratégia 1: Bing Image Downloader
 # ─────────────────────────────────────────────────────────────────────────────
-def _buscar_ddg(termo: str, destino: str, prefixo: str) -> str | None:
+def _buscar_bing(termo: str, destino: str, prefixo: str) -> str | None:
     try:
-        from duckduckgo_search import DDGS
-        print(f"   🔎 Pesquisando no DuckDuckGo: '{termo}'")
+        from bing_image_downloader import downloader
+        print(f"   🔎 Pesquisando no Bing: '{termo}'")
         
-        results = DDGS().images(termo, max_results=3)
+        tmp_dir = os.path.join(destino, "tmp_bing")
         
-        for item in results:
-            url_img = item.get("image", "")
-            if not url_img:
-                continue
-            try:
-                r = requests.get(url_img, headers=HEADERS_BROWSER, timeout=15, stream=True)
-                r.raise_for_status()
-                destino_final = os.path.join(destino, f"{prefixo}_ddg.jpg")
-                with open(destino_final, "wb") as f:
-                    for chunk in r.iter_content(8192):
-                        f.write(chunk)
-                Image.open(destino_final).verify()
-                print(f"   ✅ DuckDuckGo OK para '{termo}'")
-                return destino_final
-            except Exception:
-                if os.path.exists(destino_final):
-                    os.remove(destino_final)
-                continue
-        return None
+        downloader.download(
+            termo, 
+            limit=1, 
+            output_dir=tmp_dir, 
+            adult_filter_off=True, 
+            force_replace=False, 
+            timeout=15, 
+            verbose=False
+        )
+        
+        # A biblioteca cria uma subpasta com o nome do termo
+        pasta_termo = os.path.join(tmp_dir, termo)
+        if not os.path.exists(pasta_termo):
+            return None
+            
+        arquivos = list(Path(pasta_termo).glob("*.*"))
+        if not arquivos:
+            return None
+            
+        arquivo_baixado = str(arquivos[0])
+        destino_final = os.path.join(destino, f"{prefixo}_bing.jpg")
+        
+        shutil.copy(arquivo_baixado, destino_final)
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        
+        # Valida que é uma imagem real
+        Image.open(destino_final).verify()
+        print(f"   ✅ Bing Image OK para '{termo}'")
+        return destino_final
+
     except Exception as e:
-        print(f"   ⚠️  DuckDuckGo falhou: {e}")
+        print(f"   ⚠️  Bing Image falhou: {e}")
         return None
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 2: Wikipedia API
-# ─────────────────────────────────────────────────────────────────────────────
-def _buscar_wikipedia(termo: str, destino: str, prefixo: str) -> str | None:
-    """Busca a imagem da página da Wikipedia do termo (muito bom para famosos)."""
-    try:
-        print(f"   🔎 Pesquisando na Wikipedia: '{termo}'")
-        # 1. Pesquisa a página
-        url_search = f"https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch={termo}&format=json"
-        r = requests.get(url_search, timeout=10)
-        data = r.json()
-        if not data['query']['search']: return None
-        pageid = data['query']['search'][0]['pageid']
-        
-        # 2. Pega as imagens da página
-        url_images = f"https://pt.wikipedia.org/w/api.php?action=query&prop=images&pageids={pageid}&format=json"
-        r2 = requests.get(url_images, timeout=10)
-        data2 = r2.json()
-        images = data2['query']['pages'][str(pageid)].get('images', [])
-        for img in images:
-            title = img['title']
-            if not title.lower().endswith(('.jpg', '.jpeg', '.png')): 
-                continue
-            
-            # 3. Pega a URL da imagem
-            url_file = f"https://pt.wikipedia.org/w/api.php?action=query&titles={title}&prop=imageinfo&iiprop=url&format=json"
-            r3 = requests.get(url_file, timeout=10)
-            data3 = r3.json()
-            pages = data3['query']['pages']
-            img_url = list(pages.values())[0]['imageinfo'][0]['url']
-            
-            # 4. Faz o download
-            r4 = requests.get(img_url, headers=HEADERS_BROWSER, stream=True, timeout=15)
-            r4.raise_for_status()
-            destino_final = os.path.join(destino, f"{prefixo}_wiki.jpg")
-            with open(destino_final, 'wb') as f:
-                for chunk in r4.iter_content(8192):
-                    f.write(chunk)
-            Image.open(destino_final).verify()
-            print(f"   ✅ Wikipedia OK para '{termo}'")
-            return destino_final
-        return None
-    except Exception as e:
-        print(f"   ⚠️  Wikipedia falhou: {e}")
-        return None
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Estratégia 3: Placeholder colorido (nunca falha)
+# Estratégia 2: Placeholder colorido (nunca falha)
 # ─────────────────────────────────────────────────────────────────────────────
 def _criar_placeholder(nome: str, destino: str, prefixo: str, cor: tuple) -> str:
     img = Image.new("RGB", (IMG_WIDTH, IMG_HEIGHT), color=cor)
@@ -163,10 +119,9 @@ def buscar_imagens(termo_a: str, nome_a: str, termo_b: str, nome_b: str, output_
     for lado, termo, nome, cor_key in [("a", termo_a, nome_a, "a"), ("b", termo_b, nome_b, "b")]:
         print(f"\n🔍 Buscando imagem para [{nome}]: '{termo}'")
         
-        # Sequência robusta: DDGS -> Wikipedia -> Placeholder
+        # Sequência blindada: Bing (sem API key) -> Placeholder
         caminho = (
-            _buscar_ddg(termo, output_dir, f"img_{lado}")
-            or _buscar_wikipedia(nome, output_dir, f"img_{lado}") # Busca pelo nome na Wiki que é mais certeiro
+            _buscar_bing(termo, output_dir, f"img_{lado}")
             or _criar_placeholder(nome, output_dir, f"img_{lado}", CORES[cor_key])
         )
 
