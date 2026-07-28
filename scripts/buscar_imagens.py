@@ -106,8 +106,32 @@ def _buscar_wikipedia(termo: str, destino: str, prefixo: str) -> str | None:
 # ─────────────────────────────────────────────────────────────────────────────
 # Processamento final
 # ─────────────────────────────────────────────────────────────────────────────
+from PIL import Image, ImageChops
+
+def _remover_bordas(img: Image.Image) -> Image.Image:
+    """Remove bordas brancas ou pretas sólidas ao redor da imagem."""
+    # Tenta remover borda branca
+    bg_white = Image.new(img.mode, img.size, (255, 255, 255))
+    diff_w = ImageChops.difference(img, bg_white)
+    diff_w = ImageChops.add(diff_w, diff_w, 2.0, -100)
+    bbox_w = diff_w.getbbox()
+    if bbox_w:
+        img = img.crop(bbox_w)
+        
+    # Tenta remover borda preta
+    bg_black = Image.new(img.mode, img.size, (0, 0, 0))
+    diff_b = ImageChops.difference(img, bg_black)
+    diff_b = ImageChops.add(diff_b, diff_b, 2.0, -100)
+    bbox_b = diff_b.getbbox()
+    if bbox_b:
+        img = img.crop(bbox_b)
+        
+    return img
+
 def _processar_imagem(caminho: str) -> Image.Image:
     img = Image.open(caminho).convert("RGB")
+    img = _remover_bordas(img)
+    
     ratio_target = IMG_WIDTH / IMG_HEIGHT
     ratio_orig   = img.width / img.height
 
