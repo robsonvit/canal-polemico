@@ -21,3 +21,6 @@ google-auth-httplib2>=0.1.1
 
 # Utilidades
 python-dotenv>=1.0.0
+
+duckduckgo-search
+yt-dlp
