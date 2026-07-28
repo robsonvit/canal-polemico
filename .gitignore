@@ -21,3 +21,8 @@ token*.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets OAuth locais (NUNCA commitar!)
+client_secret*.json
+refresh_token*.json
+*.token.json
