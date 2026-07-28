@@ -1,0 +1,11 @@
+﻿{
+    "message":  "fix gitignore",
+    "content":  "IyBBcnF1aXZvcyBnZXJhZG9zIGUgdGVtcG9yw6FyaW9zCm91dHB1dC8KX19weWNhY2hlX18vCioucHljCioucHlvCi5lbnYKCiMgU2VjcmV0cyBPQXV0aCBsb2NhaXMgKE5VTkNBIGNvbW1pdGFyISkKY2xpZW50X3NlY3JldCouanNvbgpyZWZyZXNoX3Rva2VuKi5qc29uCioudG9rZW4uanNvbgoKIyBDYWNoZSBkbyBpY3Jhd2xlcgovdG1wL2ljcmF3bGVyXyovCgojIFNlY3JldHMgbG9jYWlzIChudW5jYSBjb21taXRhciEpCi5lbnYubG9jYWwKc2VjcmV0cy5qc29uCnRva2VuKi5qc29uCgojIElERXMKLnZzY29kZS8KLmlkZWEvCiouY29kZS13b3Jrc3BhY2UKCiMgT1MKLkRTX1N0b3JlClRodW1icy5kYgo=",
+    "sha":  [
+                "{",
+                "  \"message\": \"Bad credentials\",",
+                "  \"documentation_url\": \"https://docs.github.com/rest\",",
+                "  \"status\": \"401\"",
+                "}"
+            ]
+}
