@@ -160,42 +160,6 @@ def _criar_frame_base(
     draw.rectangle([(W // 2 - 3, Y_IMG_TOP), (W // 2 + 3, Y_IMG_BOT)],
                    fill=(255, 255, 255))
 
-    # Labels dos lados (VS no centro, nomes nas laterais)
-    font_label = _carregar_fonte(36, negrito=True)
-    font_vs     = _carregar_fonte(52, negrito=True)
-
-    # Faixas de nome nas imagens
-    for lado_x, nome in [(0, nome_a.upper()), (W // 2, nome_b.upper())]:
-        # Fundo semitransparente
-        overlay = Image.new("RGBA", (W // 2, 60), (0, 0, 0, 160))
-        canvas.paste(Image.new("RGB", (W // 2, 60), (0, 0, 0)),
-                     (lado_x, Y_IMG_BOT - 60),
-                     mask=overlay.split()[3])
-        # Trunca se necessário
-        nome_curto = nome[:14] + "..." if len(nome) > 14 else nome
-        bbox_l = draw.textbbox((0, 0), nome_curto, font=font_label)
-        lw = bbox_l[2] - bbox_l[0]
-        draw.text(
-            (lado_x + (W // 2 - lw) // 2, Y_IMG_BOT - 50),
-            nome_curto,
-            fill=(255, 255, 255),
-            font=font_label,
-        )
-
-    # VS central (círculo vermelho com "VS")
-    vs_cx, vs_cy = W // 2, (Y_IMG_TOP + Y_IMG_BOT) // 2
-    vs_r = 50
-    draw.ellipse(
-        [vs_cx - vs_r, vs_cy - vs_r, vs_cx + vs_r, vs_cy + vs_r],
-        fill=(220, 30, 30),
-        outline=(255, 255, 255),
-        width=4,
-    )
-    bbox_vs = draw.textbbox((0, 0), "VS", font=font_vs)
-    vsw, vsh = bbox_vs[2] - bbox_vs[0], bbox_vs[3] - bbox_vs[1]
-    draw.text((vs_cx - vsw // 2, vs_cy - vsh // 2 - 4), "VS",
-              fill=(255, 255, 255), font=font_vs)
-
     return canvas
 
 
