@@ -31,7 +31,20 @@ def _buscar_duckduckgo(termo: str, destino: str, prefixo: str) -> str | None:
             return None
             
         for i, res in enumerate(resultados):
-            url = res.get('image')
+            thumb_url = res.get('thumbnail')
+            img_url = res.get('image')
+            
+            url = None
+            if thumb_url and "bing.net" in thumb_url:
+                parsed = urllib.parse.urlparse(thumb_url)
+                qs = urllib.parse.parse_qs(parsed.query)
+                if 'id' in qs:
+                    url = f"https://ts1.mm.bing.net/th?id={qs['id'][0]}&w=800&h=800"
+            
+            # Se não conseguiu extrair do bing, tenta usar a original
+            if not url:
+                url = img_url
+                
             if not url: continue
             
             try:
