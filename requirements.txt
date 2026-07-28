@@ -24,3 +24,5 @@ python-dotenv>=1.0.0
 
 duckduckgo-search
 yt-dlp
+
+bing-image-downloader
