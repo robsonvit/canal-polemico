@@ -11,7 +11,7 @@ Retorna um dict JSON com:
   lado_b_nome      — "Neymar"
   termo_busca_a    — "Messi Barcelona 2015 camisa blaugrana"
   termo_busca_b    — "Neymar Bola de Ouro 2015 triste"
-  comentarios      — lista de 6 comentários virais e polêmicos
+  termo_busca_b    — "Neymar Bola de Ouro 2015 triste"
   titulo_youtube   — título formatado para o YouTube (máx 100 chars)
   descricao_yt     — descrição para o vídeo (máx 400 chars)
   tags             — lista de tags para SEO
@@ -66,8 +66,7 @@ INSTRUÇÕES:
 1. Escolha uma polêmica REAL e FAMOSA do futebol (pode ser sobre jogadores como: {', '.join(personagens_amostra)})
 2. O TÍTULO deve ser uma pergunta polêmica que faça as pessoas quererem comentar (ex: "MESSI ROUBOU A BOLA DE OURO DO NEYMAR?")
 3. Identifique os DOIS LADOS da polêmica (ex: Lado A = Messi, Lado B = Neymar)
-4. Gere 6 comentários curtos e virais que diferentes tipos de pessoas deixariam (fanboys, neutros, irônicos, apaixonados)
-5. Os comentários devem ser REAIS, com gírias do futebol brasileiro, emojis e diferentes pontos de vista
+3. Identifique os DOIS LADOS da polêmica (ex: Lado A = Messi, Lado B = Neymar)
 
 Exemplos de polêmicas para inspirar (mas crie uma DIFERENTE):
 {exemplos_str}
@@ -79,14 +78,6 @@ Responda APENAS com JSON válido no formato abaixo, sem markdown, sem texto ante
   "lado_b_nome": "Nome do Personagem/Time B",
   "termo_busca_a": "termo específico para buscar imagem no Google do lado A",
   "termo_busca_b": "termo específico para buscar imagem no Google do lado B",
-  "comentarios": [
-    "💥 Comentário fanático do lado A (máx 80 chars)",
-    "😂 Comentário irônico (máx 80 chars)",
-    "🔥 Comentário provocador (máx 80 chars)",
-    "👀 Comentário curioso/neutro (máx 80 chars)",
-    "😤 Comentário raivoso de um fã (máx 80 chars)",
-    "🤔 Comentário questionador (máx 80 chars)"
-  ],
   "titulo_youtube": "Título formatado para YouTube com emojis (máx 90 chars)",
   "descricao_yt": "Descrição curta do vídeo para YouTube com hashtags de futebol (máx 350 chars)",
   "tags": ["futebol", "polemica", "shorts", "futzona"]
@@ -113,7 +104,6 @@ Responda APENAS com JSON válido no formato abaixo, sem markdown, sem texto ante
 
     # Garantias de formato
     dados["titulo"] = dados.get("titulo", "MESSI OU CRISTIANO: QUEM É O MAIOR?").upper()
-    dados["comentarios"] = dados.get("comentarios", [])[:6]
 
     # Garante tags essenciais
     tags_base = ["futebol", "polemica", "shorts", "futzona", "futebol2026",
@@ -123,7 +113,6 @@ Responda APENAS com JSON válido no formato abaixo, sem markdown, sem texto ante
 
     print(f"✅ Polêmica gerada: {dados['titulo']}")
     print(f"   Lado A: {dados['lado_a_nome']} | Lado B: {dados['lado_b_nome']}")
-    print(f"   Comentários: {len(dados['comentarios'])} gerados")
 
     return dados
 
