@@ -1,1 +1,92 @@
-[]
+[
+  {
+    "timestamp": "2026-07-28T04:11:32.683780+00:00",
+    "titulo": "GABIGOL É O MELHOR JOGADOR DO FLAMENGO?",
+    "lado_a": "Gabigol",
+    "lado_b": "Outros jogadores do Flamengo"
+  },
+  {
+    "timestamp": "2026-07-28T04:41:38.615237+00:00",
+    "titulo": "NEYMAR É MELHOR QUE RODRYGO?",
+    "lado_a": "Neymar",
+    "lado_b": "Rodrygo"
+  },
+  {
+    "timestamp": "2026-07-28T05:07:15.857786+00:00",
+    "titulo": "RONALDO FENÔMENO É MELHOR QUE MBAPPÉ?",
+    "lado_a": "Ronaldo Fenômeno",
+    "lado_b": "Kylian Mbappé"
+  },
+  {
+    "timestamp": "2026-07-28T05:16:33.945020+00:00",
+    "titulo": "HAALAND É MELHOR QUE MBAPPE?",
+    "lado_a": "Haaland",
+    "lado_b": "Mbappé"
+  },
+  {
+    "timestamp": "2026-07-28T05:19:41.480052+00:00",
+    "titulo": "ZIDANE É O MELHOR MEIA DA HISTÓRIA, OU RONALDO FENÔMENO É O MAIOR?",
+    "lado_a": "Zidane",
+    "lado_b": "Ronaldo Fenômeno"
+  },
+  {
+    "timestamp": "2026-07-28T05:28:18.602128+00:00",
+    "titulo": "O GOL DE PLATA DA COPA DE 1986 FOI O MAIOR ROUBO DA HISTORIA",
+    "lado_a": "Maradona",
+    "lado_b": "Inglaterra"
+  },
+  {
+    "timestamp": "2026-07-28T05:38:37.177422+00:00",
+    "titulo": "RONALDO FENÔMENO FOI O MELHOR JOGADOR DOS ANOS 90",
+    "lado_a": "Ronaldo Fenômeno",
+    "lado_b": "Zidane"
+  },
+  {
+    "timestamp": "2026-07-28T05:42:36.308623+00:00",
+    "titulo": "O LIVERPOOL DE 2019 ERA SUPERIOR AO MANCHESTER CITY DE 2019",
+    "lado_a": "Liverpool",
+    "lado_b": "Manchester City"
+  },
+  {
+    "timestamp": "2026-07-28T05:53:27.606407+00:00",
+    "titulo": "MESSI NUNCA FOI MELHOR QUE RONALDINHO",
+    "lado_a": "Messi",
+    "lado_b": "Ronaldinho"
+  },
+  {
+    "timestamp": "2026-07-28T05:57:55.120402+00:00",
+    "titulo": "RONALDINHO FOI O MELHOR JOGADOR DA DÉCADA DE 2000",
+    "lado_a": "Ronaldinho",
+    "lado_b": "Zidane"
+  },
+  {
+    "timestamp": "2026-07-28T06:02:44.238274+00:00",
+    "titulo": "RONALDINHO É O MELHOR JOGADOR DA HISTÓRIA DO BARCELONA",
+    "lado_a": "Ronaldinho",
+    "lado_b": "Lionel Messi"
+  },
+  {
+    "timestamp": "2026-07-28T06:09:30.070666+00:00",
+    "titulo": "RONALDINHO FOI O MELHOR JOGADOR DA DÉCADA DE 2000",
+    "lado_a": "Ronaldinho",
+    "lado_b": "Zidane"
+  },
+  {
+    "timestamp": "2026-07-28T06:16:29.261710+00:00",
+    "titulo": "O GOL DE PLATINI FOI MAIS INJUSTO QUE O DE MARADONA",
+    "lado_a": "Platini",
+    "lado_b": "Maradona"
+  },
+  {
+    "timestamp": "2026-07-28T13:31:03.867653+00:00",
+    "titulo": "MESSI É O MELHOR JOGADOR DE FUTEBOL DE TODOS OS TEMPOS",
+    "lado_a": "Messi",
+    "lado_b": "Cristiano Ronaldo"
+  },
+  {
+    "timestamp": "2026-07-28T14:03:01.090223+00:00",
+    "titulo": "MESSI NAO MERECIA A BOLA DE OURO EM 2010",
+    "lado_a": "Messi",
+    "lado_b": "Xavi"
+  }
+]

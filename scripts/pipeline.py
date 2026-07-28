@@ -85,7 +85,6 @@ def main():
     print(f"✅ Polêmica  : {dados['titulo']}")
     print(f"   Lado A    : {dados['lado_a_nome']}")
     print(f"   Lado B    : {dados['lado_b_nome']}")
-    print(f"   Comentários: {len(dados['comentarios'])} gerados")
 
     with open(conteudo_json, "w", encoding="utf-8") as f:
         json.dump(dados, f, ensure_ascii=False, indent=2)
