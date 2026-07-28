@@ -1,0 +1,135 @@
+name: 🔥 Gerar Short Polêmico de Futebol
+
+on:
+  # ── Acionado pelo Apps Script via API REST (método principal) ────────────
+  workflow_dispatch:
+    inputs:
+      motivo:
+        description: 'Motivo do disparo (ex: agendamento_apps_script)'
+        required: false
+        default: 'manual'
+
+  # ── Agendamento automático de backup (caso Apps Script falhe) ────────────
+  # 3x/dia: 9h, 15h e 20h BRT (12h, 18h, 23h UTC)
+  schedule:
+    - cron: '0 12 * * *'   # 09:00 BRT
+    - cron: '0 18 * * *'   # 15:00 BRT
+    - cron: '0 23 * * *'   # 20:00 BRT
+
+permissions:
+  contents: write    # Para salvar tracking de polêmicas no repositório
+
+env:
+  GROQ_API_KEY:             ${{ secrets.GROQ_API_KEY }}
+  BING_API_KEY:             ${{ secrets.BING_API_KEY }}
+  YOUTUBE_CLIENT_ID:        ${{ secrets.YOUTUBE_CLIENT_ID }}
+  YOUTUBE_CLIENT_SECRET:    ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+  YOUTUBE_REFRESH_TOKEN:    ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+
+jobs:
+  gerar-short-polemico:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── 1. Checkout do repositório ─────────────────────────────────────────
+      - name: 📥 Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      # ── 2. Python 3.11 ─────────────────────────────────────────────────────
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # ── 3. FFmpeg + fontes do sistema ─────────────────────────────────────
+      - name: 🎬 Instalar FFmpeg e fontes
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg \
+            fonts-liberation \
+            fonts-dejavu-extra \
+            fonts-freefont-ttf \
+            fontconfig
+          fc-cache -fv
+          echo "✅ FFmpeg e fontes instalados"
+
+      # ── 4. Dependências Python ─────────────────────────────────────────────
+      - name: 📦 Instalar dependências Python
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "✅ Dependências instaladas"
+
+      # ── 5. Criar diretórios necessários ───────────────────────────────────
+      - name: 📁 Criar diretórios
+        run: mkdir -p output data
+
+      # ── 6. Executar pipeline ───────────────────────────────────────────────
+      - name: 🔥 Executar pipeline — Short Polêmico
+        run: python scripts/pipeline.py
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUNBUFFERED: "1"
+
+      # ── 7. Verificar arquivos gerados ─────────────────────────────────────
+      - name: 📊 Verificar saída
+        if: always()
+        run: |
+          echo "📁 Arquivos em output/:"
+          ls -lh output/ 2>/dev/null || echo "(vazia)"
+          echo ""
+          echo "📋 Conteúdo gerado:"
+          python3 -c "
+          import json, os
+          p = 'output/conteudo.json'
+          if os.path.exists(p):
+              d = json.load(open(p, encoding='utf-8'))
+              print(f'  Polêmica : {d.get(\"titulo\", \"?\")}')
+              print(f'  Lado A   : {d.get(\"lado_a_nome\", \"?\")}')
+              print(f'  Lado B   : {d.get(\"lado_b_nome\", \"?\")}')
+              print(f'  Comentários: {len(d.get(\"comentarios\", []))}')
+          else:
+              print('  (não encontrado)')
+          " || true
+          echo ""
+          echo "📈 Tracking de polêmicas:"
+          python3 -c "
+          import json, os
+          p = 'data/polemica_usadas.json'
+          if os.path.exists(p):
+              d = json.load(open(p, encoding='utf-8'))
+              print(f'  Total: {len(d)} polêmicas geradas')
+              if d:
+                  print(f'  Última: {d[-1][\"titulo\"]}')
+          " || true
+
+      # ── 8. Salvar tracking no repositório ─────────────────────────────────
+      - name: 💾 Salvar tracking no repositório
+        if: always()
+        run: |
+          git config user.name  "FutZona Bot 🔥"
+          git config user.email "bot@futzona2026.com"
+          git add data/polemica_usadas.json || true
+          git diff --staged --quiet || \
+            git commit -m "🔥 Atualiza tracking de polêmicas [skip ci]"
+          git pull --rebase origin main 2>/dev/null || \
+            git pull --rebase origin master 2>/dev/null || true
+          git push || true
+
+      # ── 9. Upload de artefato (backup por 5 dias) ─────────────────────────
+      - name: 📤 Salvar artefato (Short + conteúdo)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: short-polemico-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            output/*.mp4
+            output/conteudo.json
+          retention-days: 5
+          if-no-files-found: warn

@@ -1,0 +1,23 @@
+# Arquivos gerados e temporários
+output/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Cache do icrawler
+/tmp/icrawler_*/
+
+# Secrets locais (nunca commitar!)
+.env.local
+secrets.json
+token*.json
+
+# IDEs
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
